@@ -1,0 +1,77 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Regresi Linier Data Boston
+
+### Library
+
+```{r}
+library(MASS)
+library(ggplot2)
+library(dplyr)
+library(corrplot)
+library(caret)
+```
+
+### Data
+
+```{r}
+data=Boston
+data
+```
+
+### Exploratory Data Analyst
+
+```{r}
+str(data)
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+cor_matrix=cor(data)
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8)
+```
+
+### Split data
+
+```{r}
+set.seed(123)
+trainIndex=createDataPartition(data$medv, p = 0.8, list = FALSE)
+trainData=data[trainIndex, ]
+testData=data[-trainIndex, ]
+```
+
+### Model regresi
+
+```{r}
+model_lm=lm(medv~.-medv, data=trainData)
+summary(model_lm)
+```
+
+### Evaluasi model
+
+```{r}
+pred=predict(model_lm, newdata = testData)
+mse=mean((pred - testData$medv)^2)
+rmse=sqrt(mse)
+r2=cor(pred, testData$medv)^2
+
+cat('RMSE: ', rmse)
+cat(sprintf("\n R-squared: %.2f", r2))
+```
+
+### Plot residual
+
+```{r}
+ggplot(data.frame(Predicted = pred, Residuals = pred - testData$medv), 
+       aes(x = Predicted, y = Residuals)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, col = "red", linetype = "dashed") +
+  ggtitle("Residual Plot") +
+  theme_minimal()
+```
